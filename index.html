@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전화번호</title>
+    <style>
+        #phone-input {
+            border: 2px solid #000;
+            width: 600px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #drag-bar {
+            width: 100%;
+            height: 40px;
+            background-color: #20B2AA;
+            cursor: move;
+            user-select: none;
+        }
+
+        #phone-number {
+            padding: 10px;
+            font-size: 20px;
+        }
+
+        #instruction {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .sensitivity-button {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="phone-input">
+        <div id="drag-bar"></div>
+        <div id="instruction">전화번호를 입력해 주세요.</div>
+        <div id="phone-number" contenteditable="true">0</div>
+        <div id="sensitivity-buttons">
+            <span class="sensitivity-button" data-value="1" onclick="setSensitivity(1)">백</span>
+            <span class="sensitivity-button" data-value="50" onclick="setSensitivity(50)">천</span>
+            <span class="sensitivity-button" data-value="500" onclick="setSensitivity(500)">만</span>
+            <span class="sensitivity-button" data-value="5000" onclick="setSensitivity(5000)">십만</span>
+            <span class="sensitivity-button" data-value="50000" onclick="setSensitivity(50000)">백만</span>
+            <span class="sensitivity-button" data-value="500000" onclick="setSensitivity(500000)">천만</span>
+            <span class="sensitivity-button" data-value="5000000" onclick="setSensitivity(5000000)">억</span>
+            <span class="sensitivity-button" data-value="50000000" onclick="setSensitivity(50000000)">십억</span>
+        </div>
+    </div>
+    <button id="confirm-button" onclick="displayPhoneNumber()">입력</button>
+    <p id="result"></p>
+
+    <script>
+        let isDragging = false;
+        let startPositionX;
+        let phoneValue = 0;
+        let sensitivity = 1; // 기본 민감도 설정
+
+        const phoneInput = document.getElementById('phone-number');
+        const dragBar = document.getElementById('drag-bar');
+
+        function setSensitivity(value) {
+            sensitivity = value;
+            updateSensitivityButtons();
+        }
+
+        function updateSensitivityButtons() {
+            const buttons = document.querySelectorAll('.sensitivity-button');
+            buttons.forEach((button) => {
+                button.classList.remove('active');
+            });
+            const activeButton = document.querySelector(`.sensitivity-button[data-value="${sensitivity}"]`);
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+        }
+
+        updateSensitivityButtons();
+
+        dragBar.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            startPositionX = e.clientX;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = (e.clientX - startPositionX) * sensitivity;
+                phoneValue += deltaX;
+                startPositionX = e.clientX;
+                updatePhoneValue();
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        function updatePhoneValue() {
+            phoneValue = Math.max(0, Math.min(phoneValue, 10999999999));
+            phoneInput.textContent = phoneValue.toString().padStart(11, '0');
+        }
+
+        function displayPhoneNumber() {
+            const phoneNumber = phoneValue.toString().padStart(11, '0');
+            if (phoneNumber !== '00000000000') {
+                document.getElementById('result').textContent = `"${phoneNumber}" 입력 완료.`;
+            } else {
+                alert('전화번호를 입력해 주세요.');
+            }
+        }
+    </script>
+</body>
+</html>
